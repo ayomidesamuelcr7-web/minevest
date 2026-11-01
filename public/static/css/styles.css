@@ -1,0 +1,152 @@
+/* Minimalist Clean Fintech Design System
+   Primary: #0500A3 (Cobalt Blue) & Pure White (#FFFFFF)
+*/
+:root {
+  --primary: #0500A3;
+  --primary-hover: #040085;
+  --primary-light: #EEF0FF;
+  --primary-ring: rgba(5, 0, 163, 0.15);
+  --bg-page: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --text-main: #0B0F19;
+  --text-muted: #64748B;
+  --border-light: #E2E8F0;
+  --border-subtle: #F1F5F9;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, .font-heading {
+  font-family: 'Inter', -apple-system, sans-serif;
+  letter-spacing: -0.025em;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* Minimalist Surface Cards */
+.card-clean {
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-clean:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 4px 12px -2px rgba(11, 15, 25, 0.05);
+}
+
+.card-interactive {
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+
+.card-interactive:hover {
+  border-color: var(--primary);
+  box-shadow: 0 6px 20px -4px rgba(5, 0, 163, 0.08);
+}
+
+.card-selected {
+  border-color: var(--primary) !important;
+  background: #FFFFFF !important;
+  box-shadow: 0 0 0 2px var(--primary), 0 6px 20px -4px rgba(5, 0, 163, 0.1) !important;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--primary);
+  color: #FFFFFF;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  box-shadow: 0 4px 14px 0 rgba(5, 0, 163, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background-color: #FFFFFF;
+  color: var(--text-main);
+  border: 1px solid var(--border-light);
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+}
+
+/* Clean Custom Slider */
+input[type=range] {
+  -webkit-appearance: none;
+  background: #E2E8F0;
+  height: 6px;
+  border-radius: 9999px;
+  outline: none;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 2px 6px rgba(5, 0, 163, 0.3);
+  transition: transform 0.15s ease;
+}
+
+input[type=range]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+/* Minimal Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F8FAFC;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Subtle Minimalist Grids */
+.bg-grid-subtle {
+  background-image: radial-gradient(#E2E8F0 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Toast styling */
+.toast-item {
+  box-shadow: 0 10px 30px -5px rgba(11, 15, 25, 0.12), 0 0 0 1px rgba(11, 15, 25, 0.05);
+  border-radius: 14px;
+}

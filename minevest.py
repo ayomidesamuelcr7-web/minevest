@@ -27,7 +27,7 @@ app.add_middleware(
 )
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-STATIC_DIR = os.path.join(BASE_DIR, "static")
+STATIC_DIR = os.path.join(BASE_DIR, "public", "static") if os.path.exists(os.path.join(BASE_DIR, "public", "static")) else os.path.join(BASE_DIR, "static")
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 
 # Mount static files
