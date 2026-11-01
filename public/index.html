@@ -674,6 +674,10 @@
       <!-- ================= PANE: DEPOSIT BITCOIN ================= -->
       <div id="dash-pane-deposit" class="dash-tab-pane hidden max-w-2xl mx-auto space-y-6">
         <div>
+          <button onclick="Dashboard.switchTab('overview')" class="inline-flex items-center gap-2 text-xs font-semibold text-[#0500A3] hover:text-[#040085] bg-[#EEF0FF] hover:bg-[#EEF0FF]/80 px-3.5 py-2 rounded-xl mb-3 shadow-xs transition-colors">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>&larr; Back to Portfolio Overview</span>
+          </button>
           <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Deposit Bitcoin</h1>
           <p class="text-xs text-slate-500 mt-0.5">Transfer BTC to your dedicated multi-sig deposit address. Balance is credited upon confirmation.</p>
         </div>
@@ -741,6 +745,10 @@
       <!-- ================= PANE: INVEST IN PLANS ================= -->
       <div id="dash-pane-invest" class="dash-tab-pane hidden space-y-6">
         <div>
+          <button onclick="Dashboard.switchTab('overview')" class="inline-flex items-center gap-2 text-xs font-semibold text-[#0500A3] hover:text-[#040085] bg-[#EEF0FF] hover:bg-[#EEF0FF]/80 px-3.5 py-2 rounded-xl mb-3 shadow-xs transition-colors">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>&larr; Back to Portfolio Overview</span>
+          </button>
           <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Select Investment Plan</h1>
           <p class="text-xs text-slate-500 mt-0.5">Allocate liquid capital into automated daily yield generation cycles.</p>
         </div>
@@ -753,6 +761,10 @@
       <!-- ================= PANE: MY INVESTMENTS ================= -->
       <div id="dash-pane-my-investments" class="dash-tab-pane hidden space-y-6">
         <div>
+          <button onclick="Dashboard.switchTab('overview')" class="inline-flex items-center gap-2 text-xs font-semibold text-[#0500A3] hover:text-[#040085] bg-[#EEF0FF] hover:bg-[#EEF0FF]/80 px-3.5 py-2 rounded-xl mb-3 shadow-xs transition-colors">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>&larr; Back to Portfolio Overview</span>
+          </button>
           <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Active Investment Cycles</h1>
           <p class="text-xs text-slate-500 mt-0.5">Status, daily distribution, and maturity countdown for all ongoing allocations.</p>
         </div>
@@ -765,6 +777,10 @@
       <!-- ================= PANE: WITHDRAW ================= -->
       <div id="dash-pane-withdraw" class="dash-tab-pane hidden max-w-xl mx-auto space-y-6">
         <div>
+          <button onclick="Dashboard.switchTab('overview')" class="inline-flex items-center gap-2 text-xs font-semibold text-[#0500A3] hover:text-[#040085] bg-[#EEF0FF] hover:bg-[#EEF0FF]/80 px-3.5 py-2 rounded-xl mb-3 shadow-xs transition-colors">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>&larr; Back to Portfolio Overview</span>
+          </button>
           <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Withdraw Bitcoin</h1>
           <p class="text-xs text-slate-500 mt-0.5">Withdrawals are processed directly to your external wallet address.</p>
         </div>
@@ -772,7 +788,7 @@
         <div class="card-clean p-6 sm:p-8 space-y-5">
           <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
             <span class="text-xs font-medium text-slate-600">Available Liquid Balance:</span>
-            <span id="wth-avail-balance" class="font-mono font-bold text-[#0500A3] text-base">$14,850.00</span>
+            <span id="wth-avail-balance" class="font-mono font-bold text-[#0500A3] text-base">$0.00</span>
           </div>
 
           <div>
@@ -800,6 +816,12 @@
 
       <!-- ================= PANE: TRANSACTION LEDGER ================= -->
       <div id="dash-pane-transactions" class="dash-tab-pane hidden space-y-6">
+        <div>
+          <button onclick="Dashboard.switchTab('overview')" class="inline-flex items-center gap-2 text-xs font-semibold text-[#0500A3] hover:text-[#040085] bg-[#EEF0FF] hover:bg-[#EEF0FF]/80 px-3.5 py-2 rounded-xl mb-3 shadow-xs transition-colors">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>&larr; Back to Portfolio Overview</span>
+          </button>
+        </div>
         <div class="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Transaction Ledger</h1>
@@ -837,6 +859,10 @@
       <!-- ================= PANE: REFERRALS ================= -->
       <div id="dash-pane-referrals" class="dash-tab-pane hidden max-w-3xl mx-auto space-y-6">
         <div>
+          <button onclick="Dashboard.switchTab('overview')" class="inline-flex items-center gap-2 text-xs font-semibold text-[#0500A3] hover:text-[#040085] bg-[#EEF0FF] hover:bg-[#EEF0FF]/80 px-3.5 py-2 rounded-xl mb-3 shadow-xs transition-colors">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>&larr; Back to Portfolio Overview</span>
+          </button>
           <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Affiliate Network</h1>
           <p class="text-xs text-slate-500 mt-0.5">Earn recurring commissions from your referred investor network.</p>
         </div>
@@ -870,6 +896,10 @@
       <!-- ================= PANE: SETTINGS ================= -->
       <div id="dash-pane-settings" class="dash-tab-pane hidden max-w-xl mx-auto space-y-6">
         <div>
+          <button onclick="Dashboard.switchTab('overview')" class="inline-flex items-center gap-2 text-xs font-semibold text-[#0500A3] hover:text-[#040085] bg-[#EEF0FF] hover:bg-[#EEF0FF]/80 px-3.5 py-2 rounded-xl mb-3 shadow-xs transition-colors">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>&larr; Back to Portfolio Overview</span>
+          </button>
           <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Account Settings</h1>
           <p class="text-xs text-slate-500 mt-0.5">Update personal details and default payout addresses.</p>
         </div>

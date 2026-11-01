@@ -2,19 +2,30 @@
  * MineVest API Client
  */
 const API = {
-  token: localStorage.getItem('mv_token') || '',
-  user: JSON.parse(localStorage.getItem('mv_user') || 'null'),
+  get token() {
+    return localStorage.getItem('mv_token') || '';
+  },
+  set token(val) {
+    if (val) localStorage.setItem('mv_token', val);
+    else localStorage.removeItem('mv_token');
+  },
+
+  get user() {
+    try {
+      const u = localStorage.getItem('mv_user');
+      return u ? JSON.parse(u) : null;
+    } catch (e) {
+      return null;
+    }
+  },
+  set user(val) {
+    if (val) localStorage.setItem('mv_user', JSON.stringify(val));
+    else localStorage.removeItem('mv_user');
+  },
 
   setSession(token, user) {
     this.token = token;
     this.user = user;
-    if (token) {
-      localStorage.setItem('mv_token', token);
-      localStorage.setItem('mv_user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('mv_token');
-      localStorage.removeItem('mv_user');
-    }
   },
 
   clearSession() {

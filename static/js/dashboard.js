@@ -21,17 +21,20 @@ const Dashboard = {
       this.renderTransactions();
     } catch (err) {
       console.error("Dashboard refresh error:", err);
-      if (err.message && (err.message.includes("expired session") || err.message.includes("401"))) {
-        App.logout();
-      } else {
-        App.showToast(err.message || "Unable to sync dashboard ledger", "error");
-      }
+      App.showToast(err.message || "Unable to sync dashboard ledger", "info");
     }
   },
 
-  switchTab(tabId) {
+  switchTab(tabId, updateHash = true) {
     this.currentTab = tabId;
     
+    if (updateHash) {
+      const targetHash = tabId === 'overview' ? 'dashboard' : `dashboard/${tabId}`;
+      if (window.location.hash !== `#${targetHash}`) {
+        window.location.hash = targetHash;
+      }
+    }
+
     document.querySelectorAll('.dash-nav-btn').forEach(btn => {
       const active = btn.getAttribute('data-tab') === tabId;
       btn.classList.toggle('bg-[#EEF0FF]', active);
@@ -43,6 +46,8 @@ const Dashboard = {
     document.querySelectorAll('.dash-tab-pane').forEach(pane => {
       pane.classList.toggle('hidden', pane.id !== `dash-pane-${tabId}`);
     });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (tabId === 'overview') {
       this.renderOverviewTab();

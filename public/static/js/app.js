@@ -13,11 +13,15 @@ const App = {
   async init() {
     this.setupNavigation();
     this.setupModals();
-    await this.loadPublicData();
+
+    // 1. Immediate Synchronous Auth Initialization (Prevents flash of guest state or forced sign-in on refresh)
+    const rawHash = (window.location.hash || '').replace('#', '');
+    const parts = rawHash.split('/');
+    const mainView = parts[0] || '';
+    const subTab = parts[1] || '';
 
     // Check if user arrived via Email confirmation link redirect
-    const fullHash = window.location.hash || '';
-    if (fullHash.includes('confirmed')) {
+    if (rawHash.includes('confirmed')) {
       try {
         history.replaceState(null, '', window.location.pathname);
       } catch (e) {}
@@ -27,18 +31,17 @@ const App = {
 
     if (API.token && API.user) {
       this.updateAuthUI(true, API.user);
-      const hash = window.location.hash.replace('#', '');
-      if (hash === 'dashboard') {
-        this.navigate('dashboard', false);
-      } else if (hash === 'admin' && API.user.role === 'admin') {
+      if (mainView === 'dashboard') {
+        this.navigate('dashboard', false, subTab || 'overview');
+      } else if (mainView === 'admin' && API.user.role === 'admin') {
         this.navigate('admin', false);
-      } else if (hash === 'landing') {
+      } else if (mainView === 'landing' || mainView === 'plans' || mainView === 'security') {
         this.navigate('landing', false);
       } else {
         if (API.user.role === 'admin') {
           this.navigate('admin', false);
         } else {
-          this.navigate('dashboard', false);
+          this.navigate('dashboard', false, subTab || 'overview');
         }
       }
     } else {
@@ -46,14 +49,22 @@ const App = {
       this.navigate('landing', false);
     }
 
+    // 2. Load public marketing data asynchronously without blocking auth state
+    this.loadPublicData();
+
     setInterval(() => this.updateLiveBtcTicker(), 30000);
     setInterval(() => this.loadLiveTransactions(), 20000);
   },
 
-  navigate(viewName, updateHash = true) {
+  navigate(viewName, updateHash = true, subTab = '') {
     this.currentView = viewName;
-    if (updateHash && window.location.hash !== `#${viewName}`) {
-      window.location.hash = viewName;
+    if (updateHash) {
+      const targetHash = (viewName === 'dashboard' && subTab && subTab !== 'overview') 
+        ? `${viewName}/${subTab}` 
+        : viewName;
+      if (window.location.hash !== `#${targetHash}`) {
+        window.location.hash = targetHash;
+      }
     }
 
     document.getElementById('view-landing').classList.toggle('hidden', viewName !== 'landing');
@@ -68,6 +79,9 @@ const App = {
         return;
       }
       Dashboard.init();
+      if (subTab) {
+        Dashboard.switchTab(subTab, false);
+      }
     } else if (viewName === 'admin') {
       if (!API.token || API.user?.role !== 'admin') {
         this.showToast("Admin privileges required", "error");
@@ -273,13 +287,17 @@ const App = {
   setupNavigation() {
     window.addEventListener('hashchange', () => {
       const rawHash = (window.location.hash || '').replace('#', '');
-      if (rawHash === 'dashboard') {
-        this.navigate('dashboard', false);
-      } else if (rawHash === 'admin') {
+      const parts = rawHash.split('/');
+      const mainView = parts[0] || '';
+      const subTab = parts[1] || '';
+
+      if (mainView === 'dashboard') {
+        this.navigate('dashboard', false, subTab || 'overview');
+      } else if (mainView === 'admin') {
         this.navigate('admin', false);
-      } else if (rawHash === 'landing') {
+      } else if (mainView === 'landing' || mainView === 'plans' || mainView === 'security' || mainView === 'faq') {
         this.navigate('landing', false);
-      } else if (!rawHash) {
+      } else if (!mainView) {
         if (API.token && API.user) {
           this.navigate(API.user.role === 'admin' ? 'admin' : 'dashboard', false);
         } else {
