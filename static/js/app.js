@@ -29,24 +29,32 @@ const App = {
       this.updateAuthUI(true, API.user);
       const hash = window.location.hash.replace('#', '');
       if (hash === 'dashboard') {
-        this.navigate('dashboard');
+        this.navigate('dashboard', false);
       } else if (hash === 'admin' && API.user.role === 'admin') {
-        this.navigate('admin');
+        this.navigate('admin', false);
+      } else if (hash === 'landing') {
+        this.navigate('landing', false);
       } else {
-        this.navigate('landing');
+        if (API.user.role === 'admin') {
+          this.navigate('admin', false);
+        } else {
+          this.navigate('dashboard', false);
+        }
       }
     } else {
       this.updateAuthUI(false);
-      this.navigate('landing');
+      this.navigate('landing', false);
     }
 
     setInterval(() => this.updateLiveBtcTicker(), 30000);
     setInterval(() => this.loadLiveTransactions(), 20000);
   },
 
-  navigate(viewName) {
+  navigate(viewName, updateHash = true) {
     this.currentView = viewName;
-    window.location.hash = viewName;
+    if (updateHash && window.location.hash !== `#${viewName}`) {
+      window.location.hash = viewName;
+    }
 
     document.getElementById('view-landing').classList.toggle('hidden', viewName !== 'landing');
     document.getElementById('view-dashboard').classList.toggle('hidden', viewName !== 'dashboard');
@@ -263,6 +271,23 @@ const App = {
   },
 
   setupNavigation() {
+    window.addEventListener('hashchange', () => {
+      const rawHash = (window.location.hash || '').replace('#', '');
+      if (rawHash === 'dashboard') {
+        this.navigate('dashboard', false);
+      } else if (rawHash === 'admin') {
+        this.navigate('admin', false);
+      } else if (rawHash === 'landing') {
+        this.navigate('landing', false);
+      } else if (!rawHash) {
+        if (API.token && API.user) {
+          this.navigate(API.user.role === 'admin' ? 'admin' : 'dashboard', false);
+        } else {
+          this.navigate('landing', false);
+        }
+      }
+    });
+
     document.querySelectorAll('.btn-home').forEach(el => {
       el.addEventListener('click', (e) => {
         e.preventDefault();

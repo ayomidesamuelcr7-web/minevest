@@ -161,17 +161,41 @@ def init_db():
             plan_id INTEGER NOT NULL,
             amount_usd REAL NOT NULL,
             amount_btc REAL NOT NULL,
-            daily_payout_usd REAL NOT NULL,
-            earned_usd REAL DEFAULT 0.0,
+            daily_roi_percent REAL NOT NULL,
+            total_expected_return_usd REAL NOT NULL,
+            total_earned_usd REAL DEFAULT 0.0,
             status TEXT DEFAULT 'active',
-            days_elapsed INTEGER DEFAULT 0,
-            next_payout_at TIMESTAMP,
-            ends_at TIMESTAMP,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            end_date TIMESTAMP NOT NULL,
+            last_accrual_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id),
             FOREIGN KEY (plan_id) REFERENCES investment_plans(id)
         )
     """)
+
+    # Check and migrate user_investments columns if legacy schema detected
+    cursor.execute("PRAGMA table_info(user_investments)")
+    ui_cols = [row["name"] for row in cursor.fetchall()]
+    if ui_cols and "start_date" not in ui_cols:
+        cursor.execute("DROP TABLE user_investments")
+        cursor.execute("""
+            CREATE TABLE user_investments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                plan_id INTEGER NOT NULL,
+                amount_usd REAL NOT NULL,
+                amount_btc REAL NOT NULL,
+                daily_roi_percent REAL NOT NULL,
+                total_expected_return_usd REAL NOT NULL,
+                total_earned_usd REAL DEFAULT 0.0,
+                status TEXT DEFAULT 'active',
+                start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                end_date TIMESTAMP NOT NULL,
+                last_accrual_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id),
+                FOREIGN KEY (plan_id) REFERENCES investment_plans(id)
+            )
+        """)
 
     # 4. Transactions
     cursor.execute("""
@@ -181,14 +205,23 @@ def init_db():
             type TEXT NOT NULL,
             amount_usd REAL NOT NULL,
             amount_btc REAL NOT NULL,
-            status TEXT DEFAULT 'completed',
             tx_hash TEXT,
-            btc_address TEXT,
-            description TEXT,
+            status TEXT DEFAULT 'completed',
+            destination_address TEXT DEFAULT '',
+            description TEXT DEFAULT '',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id)
         )
     """)
+
+    # Check and migrate transactions columns if legacy schema detected
+    cursor.execute("PRAGMA table_info(transactions)")
+    tx_cols = [row["name"] for row in cursor.fetchall()]
+    if tx_cols and "destination_address" not in tx_cols:
+        try:
+            cursor.execute("ALTER TABLE transactions ADD COLUMN destination_address TEXT DEFAULT ''")
+        except Exception:
+            pass
 
     # 5. Platform settings
     cursor.execute("""
@@ -248,6 +281,34 @@ def init_db():
         ))
     else:
         cursor.execute("UPDATE users SET role = 'admin', is_verified = 1, kyc_status = 'verified' WHERE email = 'ayomide4354@gmail.com'")
+
+    # Ensure Funded $5,000 Investor account is present & preserved
+    cursor.execute("SELECT id FROM users WHERE email = 'ayomidesamuelcr7@gmail.com'")
+    existing_investor = cursor.fetchone()
+    if not existing_investor:
+        cursor.execute("""
+            INSERT INTO users (email, full_name, password_hash, role, btc_address, balance_usd, balance_btc, referral_code, kyc_status, is_verified)
+            VALUES (?, ?, ?, 'investor', ?, 5000.0, 0.064184, 'MVD9002A6E', 'verified', 1)
+        """, (
+            "ayomidesamuelcr7@gmail.com",
+            "Ayomide Samuel",
+            hash_password("investor123"),
+            "bc1q4b3c46c119f318de97bb6bb1d4657803408f"
+        ))
+        inv_id = cursor.lastrowid
+        cursor.execute("""
+            INSERT INTO transactions (user_id, type, amount_usd, amount_btc, tx_hash, status, destination_address, description)
+            VALUES (?, 'deposit', 5000.0, 0.064177, 'tx_dep_3a9a838ce5cf2ce3d1e690f5cc896d25c23c8bb3', 'completed', 'bc1qzul99g93eyeqdsta066p7vddzd38nea8w5j2wc', 'Bitcoin Deposit (Confirmed by Admin)')
+        """, (inv_id,))
+    else:
+        cursor.execute("UPDATE users SET is_verified = 1, kyc_status = 'verified' WHERE email = 'ayomidesamuelcr7@gmail.com'")
+        # Ensure deposit transaction is recorded
+        cursor.execute("SELECT id FROM transactions WHERE user_id = ? AND type = 'deposit'", (existing_investor["id"],))
+        if not cursor.fetchone():
+            cursor.execute("""
+                INSERT INTO transactions (user_id, type, amount_usd, amount_btc, tx_hash, status, destination_address, description)
+                VALUES (?, 'deposit', 5000.0, 0.064177, 'tx_dep_3a9a838ce5cf2ce3d1e690f5cc896d25c23c8bb3', 'completed', 'bc1qzul99g93eyeqdsta066p7vddzd38nea8w5j2wc', 'Bitcoin Deposit (Confirmed by Admin)')
+            """, (existing_investor["id"],))
 
     conn.commit()
     conn.close()

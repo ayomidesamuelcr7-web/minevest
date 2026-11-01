@@ -21,8 +21,10 @@ const Dashboard = {
       this.renderTransactions();
     } catch (err) {
       console.error("Dashboard refresh error:", err);
-      if (err.message.includes("token") || err.message.includes("401")) {
+      if (err.message && (err.message.includes("expired session") || err.message.includes("401"))) {
         App.logout();
+      } else {
+        App.showToast(err.message || "Unable to sync dashboard ledger", "error");
       }
     }
   },
@@ -402,9 +404,13 @@ const Dashboard = {
   },
 
   async triggerAccrual() {
+    const btn = document.getElementById('btn-simulate-accrual');
+    const origText = btn ? btn.innerText : 'Synchronize Daily Yield';
     try {
-      const btn = document.getElementById('btn-simulate-accrual');
-      if (btn) btn.disabled = true;
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'Synchronizing...';
+      }
 
       const res = await API.triggerYieldAccrual();
       if (res.accrued_total_usd > 0) {
@@ -414,9 +420,13 @@ const Dashboard = {
       }
 
       await this.refresh();
-      if (btn) btn.disabled = false;
     } catch (err) {
       App.showToast(err.message, "error");
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerText = origText;
+      }
     }
   },
 
