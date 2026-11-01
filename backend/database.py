@@ -87,12 +87,18 @@ class SQLiteConnectionWrapper:
             pass
 
 
+def get_db_path() -> str:
+    # On Vercel / serverless runtimes, root directory is read-only; use /tmp
+    if os.environ.get("VERCEL") or not os.access(BASE_DIR, os.W_OK):
+        return "/tmp/minevest.db"
+    return os.path.join(BASE_DIR, "minevest.db")
+
 def get_db():
     """
-    Returns high-performance local SQLite database connection.
-    Fully integrated with Firebase Authentication.
+    Returns SQLite database connection.
+    Automatically supports serverless writable /tmp on Vercel.
     """
-    sqlite_path = os.path.join(BASE_DIR, "minevest.db")
+    sqlite_path = get_db_path()
     conn = sqlite3.connect(sqlite_path, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     return SQLiteConnectionWrapper(conn)
