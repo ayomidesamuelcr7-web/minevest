@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MineVest Capital | Institutional Bitcoin Investment & Yield Platform</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230500A3'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2H9v-2h2v-2H9V8h2V6h2v2h1.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5H13v2h2v2h-2v2z'/></svg>">
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              DEFAULT: '#0500A3',
+              hover: '#040085',
+              light: '#EEF0FF',
+              subtle: '#F5F6FF'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- FontAwesome 6 Icons (CSS + Local SVG Engine for 100% Reliability) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="/static/vendor/fontawesome.min.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom Minimalist Styles -->
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="bg-[#F8FAFC] text-slate-900 min-h-screen flex flex-col font-sans selection:bg-[#0500A3] selection:text-white">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm pointer-events-none"></div>
+
+  <!-- Global Minimalist Header -->
+  <header class="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-slate-200/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3.5 flex items-center justify-between">
+      
+      <!-- Logo -->
+      <a href="#" class="btn-home flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-[#0500A3] flex items-center justify-center text-white">
+          <i class="fa-brands fa-bitcoin text-lg"></i>
+        </div>
+        <div>
+          <span class="font-bold text-lg tracking-tight text-slate-900 flex items-center gap-1.5">
+            MineVest<span class="text-[#0500A3]">Capital</span>
+          </span>
+          <span class="text-[10px] text-slate-500 uppercase tracking-wider block font-semibold">Institutional Digital Wealth</span>
+        </div>
+      </a>
+
+      <!-- Live BTC Market Indicator (Desktop - DIA Data Oracle) -->
+      <div class="hidden lg:flex items-center gap-3 px-3.5 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-xs">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-slate-500 font-medium">BTC/USD:</span>
+          <span id="btc-live-price" class="font-semibold text-slate-900 font-mono">$77,366.50</span>
+        </div>
+        <span id="btc-live-change" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <i class="fa-solid fa-arrow-up text-[9px]"></i> +0.70%
+        </span>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-600">
+        <a href="#plans" onclick="App.navigate('landing')" class="hover:text-[#0500A3] transition-colors">Yield Plans</a>
+        <a href="#security" onclick="App.navigate('landing')" class="hover:text-[#0500A3] transition-colors">Security & Reserves</a>
+        <a href="#activity" onclick="App.navigate('landing')" class="hover:text-[#0500A3] transition-colors">Live Activity</a>
+        <a href="#faq" onclick="App.navigate('landing')" class="hover:text-[#0500A3] transition-colors">FAQ</a>
+      </nav>
+
+      <!-- Auth Action Buttons -->
+      <div class="flex items-center gap-2.5">
+        <!-- Guest State -->
+        <div id="nav-guest-group" class="flex items-center gap-2">
+          <button onclick="App.openModal('login')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+            Sign In
+          </button>
+          <button onclick="App.openModal('register')" class="px-4 py-2 rounded-xl text-xs font-semibold btn-primary">
+            Create Account
+          </button>
+        </div>
+
+        <!-- Logged-in State -->
+        <div id="nav-user-group" class="hidden flex items-center gap-2.5">
+          <button id="nav-admin-link" onclick="App.navigate('admin')" class="hidden px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#EEF0FF] text-[#0500A3] border border-[#0500A3]/20 hover:bg-[#EEF0FF]/80 flex items-center gap-1.5 transition-colors">
+            <i class="fa-solid fa-gauge-high"></i> Admin Portal
+          </button>
+          <button onclick="App.navigate('dashboard')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-900 border border-slate-200 flex items-center gap-2 shadow-sm transition-colors">
+            <i class="fa-solid fa-wallet text-[#0500A3]"></i>
+            <span id="nav-user-display-name">Alexander Vance</span>
+          </button>
+          <button onclick="App.logout()" title="Sign Out" class="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- 1. PUBLIC MARKETING PORTAL (LANDING VIEW)  -->
+  <!-- ========================================== -->
+  <main id="view-landing" class="flex-grow">
+    
+    <!-- Hero Section -->
+    <section class="relative pt-20 pb-20 bg-white border-b border-slate-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-3xl mx-auto">
+          
+          <!-- Category Pill -->
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EEF0FF] text-[#0500A3] text-xs font-semibold border border-[#0500A3]/15 mb-6">
+            <i class="fa-solid fa-shield-halved text-[11px]"></i>
+            <span>Institutional Bitcoin Wealth Management</span>
+          </div>
+
+          <h1 class="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-6">
+            Institutional Bitcoin Yields. <br>
+            <span class="text-[#0500A3]">Automated Daily Distributions.</span>
+          </h1>
+
+          <p class="text-base sm:text-lg text-slate-600 font-normal leading-relaxed mb-8 max-w-2xl mx-auto">
+            Leverage proprietary green-energy ASIC mining clusters and institutional liquidity arbitrage. Earn up to <strong class="text-slate-900 font-semibold">20.0% daily returns (up to 500% Total ROI)</strong> on your Bitcoin with automated instant withdrawals.
+          </p>
+
+          <!-- Clean CTAs -->
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mb-16">
+            <button onclick="App.openModal('register')" class="w-full sm:w-auto px-6 py-3.5 rounded-xl btn-primary text-sm font-semibold flex items-center justify-center gap-2">
+              <span>Open Investor Account</span>
+              <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+            <a href="#plans" class="w-full sm:w-auto px-6 py-3.5 rounded-xl btn-secondary text-sm font-semibold flex items-center justify-center gap-2">
+              <i class="fa-solid fa-layer-group text-slate-500 text-xs"></i>
+              <span>Explore Yield Plans</span>
+            </a>
+          </div>
+
+          <!-- Minimal Metrics Strip -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-left">
+            <div class="p-5 rounded-xl bg-slate-50 border border-slate-200">
+              <div class="text-slate-500 text-xs font-medium mb-1">Assets Under Custody</div>
+              <div id="stat-aum" class="text-2xl font-bold text-slate-900 font-mono">$482.9M+</div>
+              <div class="text-[11px] text-emerald-700 font-medium flex items-center gap-1 mt-1">
+                <i class="fa-solid fa-circle-check text-[10px]"></i> Proof of Reserves Audited
+              </div>
+            </div>
+            <div class="p-5 rounded-xl bg-slate-50 border border-slate-200">
+              <div class="text-slate-500 text-xs font-medium mb-1">Active Global Investors</div>
+              <div id="stat-investors" class="text-2xl font-bold text-slate-900 font-mono">148,290</div>
+              <div class="text-[11px] text-[#0500A3] font-medium flex items-center gap-1 mt-1">
+                <i class="fa-solid fa-globe text-[10px]"></i> 140+ Jurisdictions
+              </div>
+            </div>
+            <div class="p-5 rounded-xl bg-slate-50 border border-slate-200">
+              <div class="text-slate-500 text-xs font-medium mb-1">Total Payouts Distributed</div>
+              <div id="stat-payouts" class="text-2xl font-bold text-slate-900 font-mono">$164.7M+</div>
+              <div class="text-[11px] text-emerald-700 font-medium flex items-center gap-1 mt-1">
+                <i class="fa-solid fa-bolt text-[10px]"></i> Daily Settlement
+              </div>
+            </div>
+            <div class="p-5 rounded-xl bg-slate-50 border border-slate-200">
+              <div class="text-slate-500 text-xs font-medium mb-1">Contingency Reserve</div>
+              <div id="stat-reserves" class="text-2xl font-bold text-slate-900 font-mono">$125.0M</div>
+              <div class="text-[11px] text-[#0500A3] font-medium flex items-center gap-1 mt-1">
+                <i class="fa-solid fa-vault text-[10px]"></i> BitGo Multi-Sig Vaults
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Minimal Market Indicator Strip -->
+    <div class="bg-slate-50 border-b border-slate-200 py-3 text-xs text-slate-600">
+      <div class="max-w-7xl mx-auto px-4 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <i class="fa-brands fa-bitcoin text-[#0500A3] text-sm"></i>
+          <span>Bitcoin Index Price:</span>
+          <span id="hero-btc-price" class="text-slate-900 font-bold font-mono">$77,366.50</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span>24h Range:</span>
+          <span class="text-slate-900 font-medium font-mono">$75,900.00 &ndash; $78,300.00</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-lock text-emerald-600"></i>
+          <span>Custody Protocol:</span>
+          <span class="text-slate-900 font-medium">100% Segregated Cold Storage</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-chart-line text-[#0500A3]"></i>
+          <span>Average Platform Yield:</span>
+          <span class="text-[#0500A3] font-bold">20.0% / Day</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Investment Plans Section -->
+    <section id="plans" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-14">
+        <span class="text-xs font-bold uppercase tracking-wider text-[#0500A3]">
+          Curated Yield Packages
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-2 mb-3">
+          Fixed-Yield Investment Plans
+        </h2>
+        <p class="text-slate-600 text-sm">
+          Disciplined algorithmic yield generation. 100% of invested principal capital is safeguarded and returned at cycle maturity.
+        </p>
+      </div>
+
+      <div id="landing-plans-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Rendered dynamically by App.renderPlansSection -->
+      </div>
+    </section>
+
+    <!-- Live Verified Blockchain Activity Feed -->
+    <section id="activity" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-3">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-[#0500A3]">
+            Network Transparency
+          </span>
+          <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-1">
+            Live Deposits & Payouts Ledger
+          </h2>
+          <p class="text-slate-600 text-xs mt-1">Real-time verified settlement transactions broadcast to the Bitcoin ledger.</p>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-slate-500">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>Live node synchronization active</span>
+        </div>
+      </div>
+
+      <div class="card-clean overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                <th class="py-3 px-4">Investor</th>
+                <th class="py-3 px-4">Transaction Type</th>
+                <th class="py-3 px-4">Amount (USD)</th>
+                <th class="py-3 px-4">Amount (BTC)</th>
+                <th class="py-3 px-4">Transaction Hash</th>
+                <th class="py-3 px-4 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody id="landing-live-tx-tbody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Institutional Custody & Security -->
+    <section id="security" class="py-20 bg-white border-y border-slate-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-2xl mx-auto mb-14">
+          <span class="text-xs font-bold uppercase tracking-wider text-[#0500A3]">
+            Enterprise Custody
+          </span>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-1">
+            Built On Institutional Security Standards
+          </h2>
+          <p class="text-slate-600 text-xs mt-2">
+            Rigorous asset segregation, multi-sig authorization, and third-party cryptographic audits.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="card-clean p-8">
+            <div class="w-10 h-10 rounded-xl bg-[#EEF0FF] text-[#0500A3] flex items-center justify-center text-lg mb-5">
+              <i class="fa-solid fa-vault"></i>
+            </div>
+            <h3 class="font-bold text-base text-slate-900 mb-2">100% Segregated Cold Storage</h3>
+            <p class="text-slate-600 text-xs leading-relaxed">
+              98% of all digital assets reside in geographically isolated, multi-signature deep cold storage vaults protected by BitGo and Ledger Enterprise.
+            </p>
+          </div>
+
+          <div class="card-clean p-8">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-lg mb-5">
+              <i class="fa-solid fa-file-shield"></i>
+            </div>
+            <h3 class="font-bold text-base text-slate-900 mb-2">Cryptographic Proof of Reserves</h3>
+            <p class="text-slate-600 text-xs leading-relaxed">
+              Every satoshi is mathematically verifiable on-chain via Merkle Tree root hashes. We enforce strict 1:1 asset backing with zero fractional reserve exposure.
+            </p>
+          </div>
+
+          <div class="card-clean p-8">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center text-lg mb-5">
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h3 class="font-bold text-base text-slate-900 mb-2">$125,000,000 Insurance Fund</h3>
+            <p class="text-slate-600 text-xs leading-relaxed">
+              Our dedicated contingency liquidity reserve buffers investor deposits against systemic market liquidity shocks and network reorg risks.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 3-Step Process -->
+    <section class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-xl mx-auto mb-14">
+        <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">How To Begin Earning</h2>
+        <p class="text-slate-600 text-xs mt-1.5">Activate daily Bitcoin yield compounding in three simple steps.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="card-clean p-8 relative">
+          <div class="text-3xl font-bold text-slate-200 absolute top-6 right-6 font-mono">01</div>
+          <div class="w-10 h-10 rounded-xl bg-[#EEF0FF] text-[#0500A3] flex items-center justify-center text-base mb-5">
+            <i class="fa-solid fa-user-plus"></i>
+          </div>
+          <h3 class="font-bold text-sm text-slate-900 mb-1.5">Register Investor Account</h3>
+          <p class="text-slate-600 text-xs leading-relaxed">Create your account in under a minute. Your unique Bitcoin deposit address is generated automatically.</p>
+        </div>
+
+        <div class="card-clean p-8 relative">
+          <div class="text-3xl font-bold text-slate-200 absolute top-6 right-6 font-mono">02</div>
+          <div class="w-10 h-10 rounded-xl bg-[#EEF0FF] text-[#0500A3] flex items-center justify-center text-base mb-5">
+            <i class="fa-solid fa-qrcode"></i>
+          </div>
+          <h3 class="font-bold text-sm text-slate-900 mb-1.5">Transfer BTC & Choose Tier</h3>
+          <p class="text-slate-600 text-xs leading-relaxed">Deposit Bitcoin directly to your dedicated address. Choose your preferred yield plan starting at $100.</p>
+        </div>
+
+        <div class="card-clean p-8 relative">
+          <div class="text-3xl font-bold text-slate-200 absolute top-6 right-6 font-mono">03</div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-base mb-5">
+            <i class="fa-solid fa-money-bill-transfer"></i>
+          </div>
+          <h3 class="font-bold text-sm text-slate-900 mb-1.5">Collect Daily Distributions</h3>
+          <p class="text-slate-600 text-xs leading-relaxed">Yields accrue automatically every 24 hours. Withdraw to any external Bitcoin wallet at any time without lockup penalties.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Multi-Tier Affiliate Section -->
+    <section class="py-16 bg-white border-t border-slate-200">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="card-clean p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-8 border-slate-200">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-[#0500A3]">
+              Institutional Partner Program
+            </span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1 mb-2">
+              Multi-Tier Referral Commission
+            </h2>
+            <p class="text-slate-600 text-xs max-w-lg">
+              Introduce private investors or family offices to MineVest Capital and earn immediate commissions credited directly to your liquid balance.
+            </p>
+            <div class="flex items-center gap-6 mt-6">
+              <div>
+                <div class="text-2xl font-bold text-[#0500A3]">7.0%</div>
+                <div class="text-[11px] text-slate-500">Tier 1 Direct</div>
+              </div>
+              <div class="h-8 w-px bg-slate-200"></div>
+              <div>
+                <div class="text-2xl font-bold text-slate-800">3.0%</div>
+                <div class="text-[11px] text-slate-500">Tier 2 Network</div>
+              </div>
+              <div class="h-8 w-px bg-slate-200"></div>
+              <div>
+                <div class="text-2xl font-bold text-slate-600">1.0%</div>
+                <div class="text-[11px] text-slate-500">Tier 3 Affiliate</div>
+              </div>
+            </div>
+          </div>
+          <button onclick="App.openModal('register')" class="btn-primary px-6 py-3 text-xs font-semibold whitespace-nowrap">
+            Join Affiliate Network
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Accordion -->
+    <section id="faq" class="py-20 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-10">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Frequently Asked Questions</h2>
+        <p class="text-slate-600 text-xs mt-1.5">Common inquiries regarding yield distribution, security, and withdrawals.</p>
+      </div>
+
+      <div class="space-y-3">
+        <details class="card-clean p-4 cursor-pointer group">
+          <summary class="font-semibold text-slate-900 flex justify-between items-center text-xs">
+            <span>How does MineVest generate daily yields on Bitcoin?</span>
+            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform text-[11px]"></i>
+          </summary>
+          <p class="text-slate-600 text-xs mt-2.5 leading-relaxed">
+            Yields are generated through high-efficiency green ASIC Bitcoin mining farms located in Iceland and Texas, combined with algorithmic market-making liquidity pools and cross-exchange OTC arbitrage.
+          </p>
+        </details>
+
+        <details class="card-clean p-4 cursor-pointer group">
+          <summary class="font-semibold text-slate-900 flex justify-between items-center text-xs">
+            <span>When can I withdraw my accrued profits and capital?</span>
+            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform text-[11px]"></i>
+          </summary>
+          <p class="text-slate-600 text-xs mt-2.5 leading-relaxed">
+            Daily yield earnings can be withdrawn instantly at any time 24 hours a day, 7 days a week. Minimum withdrawal is $25 USD equivalent in BTC. Initial invested capital is returned to your available balance upon plan maturity.
+          </p>
+        </details>
+
+        <details class="card-clean p-4 cursor-pointer group">
+          <summary class="font-semibold text-slate-900 flex justify-between items-center text-xs">
+            <span>What is the minimum amount required to begin investing?</span>
+            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform text-[11px]"></i>
+          </summary>
+          <p class="text-slate-600 text-xs mt-2.5 leading-relaxed">
+            The Starter Tier begins at $100 USD (equivalent in Bitcoin satoshis), making institutional-grade crypto yield accessible to individual investors.
+          </p>
+        </details>
+
+        <details class="card-clean p-4 cursor-pointer group">
+          <summary class="font-semibold text-slate-900 flex justify-between items-center text-xs">
+            <span>Are my Bitcoin deposits protected against exchange insolvency?</span>
+            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform text-[11px]"></i>
+          </summary>
+          <p class="text-slate-600 text-xs mt-2.5 leading-relaxed">
+            Yes. Customer assets are held in segregated, multi-signature cold storage vaults safeguarded by BitGo and backed by a $125M dedicated insurance reserve fund.
+          </p>
+        </details>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- 2. INVESTOR DASHBOARD VIEW                 -->
+  <!-- ========================================== -->
+  <main id="view-dashboard" class="hidden flex-grow flex">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between p-4 hidden md:flex">
+      <div class="space-y-6">
+        
+        <!-- User Profile Card -->
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-[#EEF0FF] text-[#0500A3] flex items-center justify-center font-bold text-xs">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <div class="overflow-hidden">
+            <div id="dash-user-name" class="font-bold text-slate-900 text-xs truncate">Alexander Vance</div>
+            <div id="dash-user-email" class="text-[10px] text-slate-500 truncate">investor@minevest.com</div>
+            <div class="mt-1">
+              <span id="dash-user-kyc" class="text-[9px] px-1.5 py-0.2 rounded-full font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">Verified</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="space-y-1">
+          <button onclick="Dashboard.switchTab('overview')" data-tab="overview" class="dash-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold bg-[#EEF0FF] text-[#0500A3] transition-colors">
+            <i class="fa-solid fa-chart-pie w-4 text-center"></i>
+            <span>Portfolio Overview</span>
+          </button>
+
+          <button onclick="Dashboard.switchTab('deposit')" data-tab="deposit" class="dash-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors">
+            <i class="fa-solid fa-circle-arrow-down w-4 text-center text-[#0500A3]"></i>
+            <span>Deposit Bitcoin</span>
+          </button>
+
+          <button onclick="Dashboard.switchTab('invest')" data-tab="invest" class="dash-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors">
+            <i class="fa-solid fa-layer-group w-4 text-center text-emerald-600"></i>
+            <span>Invest in Plans</span>
+          </button>
+
+          <button onclick="Dashboard.switchTab('my-investments')" data-tab="my-investments" class="dash-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors">
+            <i class="fa-solid fa-clock-rotate-left w-4 text-center text-blue-600"></i>
+            <span>Active Cycles</span>
+          </button>
+
+          <button onclick="Dashboard.switchTab('withdraw')" data-tab="withdraw" class="dash-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors">
+            <i class="fa-solid fa-circle-arrow-up w-4 text-center text-slate-500"></i>
+            <span>Withdraw Funds</span>
+          </button>
+
+          <button onclick="Dashboard.switchTab('transactions')" data-tab="transactions" class="dash-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors">
+            <i class="fa-solid fa-receipt w-4 text-center text-slate-500"></i>
+            <span>Ledger History</span>
+          </button>
+
+          <button onclick="Dashboard.switchTab('referrals')" data-tab="referrals" class="dash-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors">
+            <i class="fa-solid fa-users w-4 text-center text-slate-500"></i>
+            <span>Affiliate & Referrals</span>
+          </button>
+
+          <button onclick="Dashboard.switchTab('settings')" data-tab="settings" class="dash-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors">
+            <i class="fa-solid fa-gear w-4 text-center text-slate-500"></i>
+            <span>Account Settings</span>
+          </button>
+        </nav>
+
+      </div>
+
+      <!-- Quick Action: Daily Accrual Simulator -->
+      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+        <div class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+          <i class="fa-solid fa-bolt text-[#0500A3]"></i> Daily Yield Simulator
+        </div>
+        <p class="text-slate-500 text-[11px] mb-2.5">Fast-forward 24 hours to trigger daily ROI accrual on active plans.</p>
+        <button id="btn-simulate-accrual" onclick="Dashboard.triggerAccrual()" class="w-full py-2 btn-primary text-xs">
+          Simulate Daily Yield
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Dashboard Body -->
+    <div class="flex-1 bg-[#F8FAFC] p-4 sm:p-8 overflow-y-auto">
+
+      <!-- ================= PANE: OVERVIEW ================= -->
+      <div id="dash-pane-overview" class="dash-tab-pane space-y-6">
+        
+        <!-- Header Info & Actions -->
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Investor Portfolio</h1>
+            <p class="text-xs text-slate-500 mt-0.5">Real-time asset valuation and daily yield accrual ledger.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="Dashboard.switchTab('deposit')" class="px-3.5 py-2 rounded-lg btn-secondary text-xs font-semibold flex items-center gap-1.5">
+              <i class="fa-solid fa-arrow-down text-[#0500A3]"></i> Deposit BTC
+            </button>
+            <button onclick="Dashboard.switchTab('invest')" class="px-4 py-2 rounded-lg btn-primary text-xs font-semibold flex items-center gap-1.5">
+              <i class="fa-solid fa-plus text-xs"></i> New Allocation
+            </button>
+          </div>
+        </div>
+
+        <!-- Portfolio Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="card-clean p-5">
+            <span class="text-xs font-medium text-slate-500 block mb-1">Total Portfolio Value</span>
+            <div id="dash-total-portfolio" class="text-2xl font-bold text-slate-900 font-mono">$19,850.00</div>
+            <div id="dash-total-portfolio-btc" class="text-xs text-slate-500 font-mono mt-0.5">≈ 0.289992 BTC</div>
+          </div>
+
+          <div class="card-clean p-5">
+            <span class="text-xs font-medium text-slate-500 block mb-1">Active Capital Allocation</span>
+            <div id="dash-active-invested" class="text-2xl font-bold text-slate-900 font-mono">$5,000.00</div>
+            <div id="dash-active-invested-btc" class="text-xs text-slate-500 font-mono mt-0.5">≈ 0.073500 BTC</div>
+          </div>
+
+          <div class="card-clean p-5">
+            <span class="text-xs font-medium text-slate-500 block mb-1">Total Yield Earned</span>
+            <div id="dash-total-profit" class="text-2xl font-bold text-emerald-700 font-mono">+$420.00</div>
+            <div id="dash-total-profit-btc" class="text-xs text-slate-500 font-mono mt-0.5">≈ 0.006135 BTC</div>
+          </div>
+        </div>
+
+        <!-- Portfolio Performance Chart & Quick Security Summary -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 card-clean p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-slate-900 text-sm">Portfolio Cumulative Valuation</h3>
+              <span id="dash-chart-change-badge" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">0.0% This Week</span>
+            </div>
+            <div class="h-60 relative">
+              <canvas id="portfolioChart"></canvas>
+              <!-- Clean Empty State when user has no transactions or investments yet -->
+              <div id="dash-chart-empty-state" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-white/95 rounded-xl text-center p-4">
+                <div class="w-12 h-12 rounded-full bg-[#EEF0FF] flex items-center justify-center text-[#0500A3] mb-2.5">
+                  <i class="fa-solid fa-chart-line text-lg"></i>
+                </div>
+                <p class="text-xs font-bold text-slate-900">No Portfolio Activity Yet</p>
+                <p class="text-[11px] text-slate-500 max-w-xs mt-1">Make your first deposit or activate an investment tier to start generating and tracking your daily yield trajectory.</p>
+                <button onclick="Dashboard.switchTab('deposit')" class="mt-3 px-4 py-2 btn-primary text-xs font-semibold rounded-xl flex items-center gap-1.5 shadow-sm">
+                  <i class="fa-solid fa-wallet text-[10px]"></i> Deposit Bitcoin
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-clean p-6 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-3">
+                <i class="fa-solid fa-shield-halved text-[#0500A3]"></i>
+                <h4 class="font-bold text-slate-900 text-sm">Custody & Compliance</h4>
+              </div>
+              <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+                Assets are segregated in multi-sig cold vaults with automated $125M insurance backing.
+              </p>
+              <div class="space-y-2.5 text-xs">
+                <div class="flex justify-between py-1.5 border-b border-slate-100">
+                  <span class="text-slate-500">Identity Verification:</span>
+                  <span class="text-emerald-700 font-semibold">Level 2 Verified</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-100">
+                  <span class="text-slate-500">2FA Protection:</span>
+                  <span class="text-slate-900 font-semibold">Enabled</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-100">
+                  <span class="text-slate-500">Instant Withdrawals:</span>
+                  <span class="text-[#0500A3] font-semibold">Active (&lt; $5,000)</span>
+                </div>
+              </div>
+            </div>
+
+            <button onclick="Dashboard.switchTab('withdraw')" class="w-full mt-4 py-2.5 btn-secondary text-xs">
+              Request Withdrawal
+            </button>
+          </div>
+        </div>
+
+        <!-- Active Investment Cycles -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-bold text-slate-900 text-base">Active Investment Cycles</h3>
+            <button onclick="Dashboard.switchTab('invest')" class="text-xs text-[#0500A3] font-semibold hover:underline">
+              Explore Plans &rarr;
+            </button>
+          </div>
+          <div id="dash-active-plans-container" class="space-y-3">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Recent Ledger Activity -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-bold text-slate-900 text-base">Recent Ledger Activity</h3>
+            <button onclick="Dashboard.switchTab('transactions')" class="text-xs text-[#0500A3] font-semibold hover:underline">
+              View Full History &rarr;
+            </button>
+          </div>
+          <div class="card-clean overflow-hidden">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th class="py-3 px-4">Type</th>
+                  <th class="py-3 px-4">Amount</th>
+                  <th class="py-3 px-4">Transaction ID</th>
+                  <th class="py-3 px-4">Timestamp</th>
+                  <th class="py-3 px-4 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody id="dash-recent-tx-tbody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= PANE: DEPOSIT BITCOIN ================= -->
+      <div id="dash-pane-deposit" class="dash-tab-pane hidden max-w-2xl mx-auto space-y-6">
+        <div>
+          <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Deposit Bitcoin</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Transfer BTC to your dedicated multi-sig deposit address. Balance is credited upon confirmation.</p>
+        </div>
+
+        <div class="card-clean p-6 sm:p-8 space-y-6">
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs uppercase font-bold text-slate-500 mb-1.5">Deposit Amount (USD)</label>
+              <div class="relative flex items-center bg-white rounded-xl border border-slate-300 p-2.5">
+                <span class="text-base font-bold text-slate-400 mr-2">$</span>
+                <input id="deposit-amount-input" type="number" value="1000" min="10" class="w-full bg-transparent text-base font-bold text-slate-900 focus:outline-none font-mono">
+              </div>
+              <div id="deposit-btc-equiv" class="text-xs font-mono text-slate-500 mt-1">≈ 0.014609 BTC</div>
+            </div>
+
+            <div>
+              <label class="block text-xs uppercase font-bold text-slate-500 mb-1.5">Asset & Network</label>
+              <div class="flex items-center gap-2.5 bg-slate-50 rounded-xl border border-slate-300 p-2.5 text-xs font-semibold text-slate-900">
+                <div class="w-6 h-6 rounded-full bg-[#F7931A] text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                  <i class="fa-brands fa-bitcoin"></i>
+                </div>
+                <span>Bitcoin (BTC)</span>
+                <span class="ml-auto text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Bitcoin Network
+                </span>
+              </div>
+              <input type="hidden" id="deposit-network-select" value="bitcoin">
+            </div>
+          </div>
+
+          <!-- QR Code and Address Box -->
+          <div class="p-5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-center gap-5">
+            <div class="bg-white p-2 rounded-lg border border-slate-200 shadow-sm">
+              <img id="deposit-qr-code" src="/static/img/btc_deposit_qr.png" alt="Bitcoin QR" class="w-36 h-36 object-contain rounded">
+            </div>
+            <div class="flex-1 space-y-2 text-xs">
+              <span class="font-bold text-slate-700 uppercase tracking-wider block">Dedicated Deposit Address:</span>
+              <div class="p-2.5 bg-white rounded-lg border border-slate-200 font-mono text-xs text-[#0500A3] break-all select-all flex items-center justify-between gap-2 shadow-xs">
+                <span id="deposit-btc-address">bc1qzul99g93eyeqdsta066p7vddzd38nea8w5j2wc</span>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('deposit-btc-address').innerText); App.showToast('Address copied to clipboard', 'success')" class="p-1.5 hover:bg-slate-100 rounded text-slate-600 transition-colors" title="Copy Address">
+                  <i class="fa-solid fa-copy"></i>
+                </button>
+              </div>
+              <p class="text-[11px] text-slate-500 leading-relaxed">
+                Send only Bitcoin (BTC) to this address. Credits automatically after 1 network confirmation.
+              </p>
+            </div>
+          </div>
+
+          <!-- Submit Deposit Request -->
+          <div class="pt-2">
+            <button onclick="Dashboard.handleDepositSubmit()" class="w-full py-3.5 btn-primary text-xs font-semibold flex items-center justify-center gap-2 shadow-sm">
+              <i class="fa-solid fa-paper-plane"></i>
+              <span>I Have Sent Payment &bull; Submit Deposit for Confirmation</span>
+            </button>
+            <p class="text-[11px] text-center text-slate-500 mt-2">
+              All deposits are verified by administration and will be confirmed and credited to your available balance upon receipt.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ================= PANE: INVEST IN PLANS ================= -->
+      <div id="dash-pane-invest" class="dash-tab-pane hidden space-y-6">
+        <div>
+          <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Select Investment Plan</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Allocate liquid capital into automated daily yield generation cycles.</p>
+        </div>
+
+        <div id="dash-invest-plans-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- ================= PANE: MY INVESTMENTS ================= -->
+      <div id="dash-pane-my-investments" class="dash-tab-pane hidden space-y-6">
+        <div>
+          <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Active Investment Cycles</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Status, daily distribution, and maturity countdown for all ongoing allocations.</p>
+        </div>
+
+        <div id="active-investments-full-list" class="space-y-4">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- ================= PANE: WITHDRAW ================= -->
+      <div id="dash-pane-withdraw" class="dash-tab-pane hidden max-w-xl mx-auto space-y-6">
+        <div>
+          <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Withdraw Bitcoin</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Withdrawals are processed directly to your external wallet address.</p>
+        </div>
+
+        <div class="card-clean p-6 sm:p-8 space-y-5">
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-600">Available Liquid Balance:</span>
+            <span id="wth-avail-balance" class="font-mono font-bold text-[#0500A3] text-base">$14,850.00</span>
+          </div>
+
+          <div>
+            <label class="block text-xs uppercase font-bold text-slate-500 mb-1.5">Destination Bitcoin Address (BTC)</label>
+            <input id="wth-btc-address" type="text" placeholder="bc1q..." class="w-full bg-white rounded-xl border border-slate-300 p-3 text-xs font-mono text-slate-900 focus:outline-none focus:border-[#0500A3]">
+          </div>
+
+          <div>
+            <div class="flex justify-between items-center mb-1.5">
+              <label class="text-xs uppercase font-bold text-slate-500">Withdrawal Amount (USD)</label>
+              <button onclick="Dashboard.setWithdrawMax()" class="text-xs font-bold text-[#0500A3] hover:underline">MAX</button>
+            </div>
+            <div class="relative flex items-center bg-white rounded-xl border border-slate-300 p-2.5">
+              <span class="text-base font-bold text-slate-400 mr-2">$</span>
+              <input id="wth-amount-input" type="number" min="25" value="500" class="w-full bg-transparent text-base font-bold text-slate-900 focus:outline-none font-mono">
+            </div>
+            <div class="text-[11px] text-slate-500 mt-1">Network Fee: 0.00005 BTC &bull; Minimum: $25.00 USD</div>
+          </div>
+
+          <button onclick="Dashboard.handleWithdrawSubmit()" class="w-full py-3 btn-primary text-xs font-semibold">
+            Confirm & Broadcast Withdrawal
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= PANE: TRANSACTION LEDGER ================= -->
+      <div id="dash-pane-transactions" class="dash-tab-pane hidden space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Transaction Ledger</h1>
+            <p class="text-xs text-slate-500 mt-0.5">Audited historical record of deposits, allocations, yields, and withdrawals.</p>
+          </div>
+          <div>
+            <select id="tx-filter-select" onchange="Dashboard.renderTransactionsTab()" class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 font-semibold focus:outline-none">
+              <option value="all">All Transactions</option>
+              <option value="deposit">Deposits</option>
+              <option value="investment">Allocations</option>
+              <option value="profit">Yield Accruals</option>
+              <option value="withdrawal">Withdrawals</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card-clean overflow-hidden">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                <th class="py-3 px-4">Type</th>
+                <th class="py-3 px-4">Amount</th>
+                <th class="py-3 px-4">Transaction ID</th>
+                <th class="py-3 px-4">Timestamp</th>
+                <th class="py-3 px-4 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody id="tx-full-tbody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ================= PANE: REFERRALS ================= -->
+      <div id="dash-pane-referrals" class="dash-tab-pane hidden max-w-3xl mx-auto space-y-6">
+        <div>
+          <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Affiliate Network</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Earn recurring commissions from your referred investor network.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="card-clean p-5">
+            <span class="text-xs text-slate-500 block mb-1">Referred Members</span>
+            <span id="ref-total-count" class="text-2xl font-bold text-slate-900 font-mono">0</span>
+          </div>
+          <div class="card-clean p-5">
+            <span class="text-xs text-slate-500 block mb-1">Total Commission Earned</span>
+            <span id="ref-total-earnings" class="text-2xl font-bold text-emerald-700 font-mono">$0.00</span>
+          </div>
+          <div class="card-clean p-5">
+            <span class="text-xs text-slate-500 block mb-1">Tier Matrix</span>
+            <span class="text-sm font-bold text-[#0500A3]">7% &bull; 3% &bull; 1%</span>
+          </div>
+        </div>
+
+        <div class="card-clean p-6">
+          <label class="block text-xs uppercase font-bold text-slate-500 mb-1.5">Your Shareable Referral URL</label>
+          <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200 font-mono text-xs text-slate-900 flex items-center justify-between gap-3">
+            <input id="ref-link-input" type="text" readonly class="w-full bg-transparent text-slate-900 font-mono focus:outline-none" value="https://minevest.capital/join?ref=...">
+            <button onclick="navigator.clipboard.writeText(document.getElementById('ref-link-input').value); App.showToast('Referral link copied', 'success')" class="px-3.5 py-1.5 btn-primary text-xs font-semibold whitespace-nowrap">
+              Copy URL
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= PANE: SETTINGS ================= -->
+      <div id="dash-pane-settings" class="dash-tab-pane hidden max-w-xl mx-auto space-y-6">
+        <div>
+          <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Account Settings</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Update personal details and default payout addresses.</p>
+        </div>
+
+        <div class="card-clean p-6 sm:p-8 space-y-4">
+          <div>
+            <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Full Legal Name</label>
+            <input id="set-full-name" type="text" class="w-full bg-white rounded-xl border border-slate-300 p-3 text-xs text-slate-900 focus:outline-none focus:border-[#0500A3]">
+          </div>
+
+          <div>
+            <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Default Bitcoin Payout Address</label>
+            <input id="set-btc-address" type="text" placeholder="bc1q..." class="w-full bg-white rounded-xl border border-slate-300 p-3 text-xs font-mono text-slate-900 focus:outline-none focus:border-[#0500A3]">
+          </div>
+
+          <button onclick="Dashboard.handleProfileUpdate()" class="w-full py-3 btn-primary text-xs font-semibold mt-2">
+            Save Settings
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- 3. ADMIN MANAGEMENT PORTAL                 -->
+  <!-- ========================================== -->
+  <main id="view-admin" class="hidden flex-grow max-w-7xl mx-auto w-full p-6 sm:p-8 space-y-6">
+    <div class="flex items-center justify-between border-b border-slate-200 pb-4">
+      <div>
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#EEF0FF] text-[#0500A3] text-xs font-semibold mb-1">
+          <i class="fa-solid fa-lock text-[10px]"></i> Administration Console
+        </div>
+        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Platform Operations</h1>
+      </div>
+      <button onclick="App.navigate('dashboard')" class="px-3.5 py-2 btn-secondary text-xs font-semibold">
+        Return to Investor Dashboard &rarr;
+      </button>
+    </div>
+
+    <!-- Admin Stat Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-6 gap-4">
+      <div class="card-clean p-4">
+        <span class="text-xs text-slate-500 block mb-1">Total Investors</span>
+        <span id="adm-total-users" class="text-2xl font-bold text-slate-900 font-mono">0</span>
+      </div>
+      <div class="card-clean p-4">
+        <span class="text-xs text-slate-500 block mb-1">Total Balances</span>
+        <span id="adm-total-balances" class="text-2xl font-bold text-[#0500A3] font-mono">$0</span>
+      </div>
+      <div class="card-clean p-4">
+        <span class="text-xs text-slate-500 block mb-1">Total Deposits</span>
+        <span id="adm-total-deposits" class="text-2xl font-bold text-slate-900 font-mono">$0</span>
+      </div>
+      <div class="card-clean p-4">
+        <span class="text-xs text-slate-500 block mb-1">Total Withdrawals</span>
+        <span id="adm-total-withdrawals" class="text-2xl font-bold text-slate-900 font-mono">$0</span>
+      </div>
+      <div class="card-clean p-4 border-amber-200 bg-amber-50/30">
+        <span class="text-xs text-amber-800 font-semibold block mb-1">Pending Deposits</span>
+        <span id="adm-pending-dep-count" class="text-2xl font-bold text-amber-700 font-mono">0</span>
+      </div>
+      <div class="card-clean p-4 border-rose-200 bg-rose-50/30">
+        <span class="text-xs text-rose-800 font-semibold block mb-1">Pending Withdrawals</span>
+        <span id="adm-pending-wth-count" class="text-2xl font-bold text-rose-600 font-mono">0</span>
+      </div>
+    </div>
+
+    <!-- Deposit Confirmation Queue -->
+    <div>
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+          <span>Deposit Confirmation Queue</span>
+          <span id="adm-pending-dep-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">0 Pending</span>
+        </h3>
+        <button onclick="Admin.loadDeposits()" class="text-xs text-[#0500A3] hover:underline font-semibold flex items-center gap-1">
+          <i class="fa-solid fa-arrows-rotate"></i> Refresh
+        </button>
+      </div>
+      <div class="card-clean overflow-hidden">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <th class="py-3 px-4">User</th>
+              <th class="py-3 px-4">Amount</th>
+              <th class="py-3 px-4">Vault Address</th>
+              <th class="py-3 px-4">TX Hash / Ref</th>
+              <th class="py-3 px-4">Status</th>
+              <th class="py-3 px-4">Created At</th>
+              <th class="py-3 px-4 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="adm-deposits-tbody">
+            <!-- Rendered dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Withdrawal Queue -->
+    <div>
+      <h3 class="font-bold text-slate-900 text-sm mb-3">Withdrawal Authorization Queue</h3>
+      <div class="card-clean overflow-hidden">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <th class="py-3 px-4">User</th>
+              <th class="py-3 px-4">Amount</th>
+              <th class="py-3 px-4">BTC Address</th>
+              <th class="py-3 px-4">Status</th>
+              <th class="py-3 px-4">Requested At</th>
+              <th class="py-3 px-4 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="adm-withdrawals-tbody">
+            <!-- Rendered dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- User Management Table -->
+    <div>
+      <h3 class="font-bold text-slate-900 text-sm mb-3">Registered User Accounts</h3>
+      <div class="card-clean overflow-hidden">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <th class="py-3 px-4">ID</th>
+              <th class="py-3 px-4">Name / Email</th>
+              <th class="py-3 px-4">Role</th>
+              <th class="py-3 px-4">Balance</th>
+              <th class="py-3 px-4">BTC Address</th>
+              <th class="py-3 px-4 text-right">Adjustment</th>
+            </tr>
+          </thead>
+          <tbody id="adm-users-tbody">
+            <!-- Rendered dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODALS (LOGIN, REGISTER, INVEST, ADMIN)    -->
+  <!-- ========================================== -->
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="card-clean w-full max-w-sm p-6 sm:p-8 relative shadow-2xl">
+      <button onclick="App.closeModal('loginModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+
+      <div class="text-center mb-4">
+        <div class="w-10 h-10 rounded-xl bg-[#EEF0FF] text-[#0500A3] flex items-center justify-center text-lg mx-auto mb-2.5">
+          <i class="fa-brands fa-bitcoin"></i>
+        </div>
+        <h3 class="text-xl font-bold text-slate-900">Sign In to MineVest</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Access your investment portal and yield dashboard</p>
+      </div>
+
+      <!-- 1-Click Google Sign In (Universal for any Gmail) -->
+      <button type="button" onclick="App.loginWithGoogle()" class="w-full py-2.5 px-4 rounded-xl border border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2.5 text-xs font-semibold text-slate-700 mb-3 shadow-sm">
+        <svg class="w-4 h-4" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <div class="relative flex py-1 items-center mb-3">
+        <div class="flex-grow border-t border-slate-200"></div>
+        <span class="flex-shrink mx-3 text-[10px] text-slate-400 uppercase font-semibold">Or with Email</span>
+        <div class="flex-grow border-t border-slate-200"></div>
+      </div>
+
+      <div class="space-y-3.5">
+        <div>
+          <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Email Address</label>
+          <input id="login-email" type="email" placeholder="investor@minevest.com" class="w-full bg-white rounded-xl border border-slate-300 p-2.5 text-xs text-slate-900 focus:outline-none focus:border-[#0500A3]">
+        </div>
+        <div>
+          <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Password</label>
+          <input id="login-password" type="password" placeholder="••••••••" class="w-full bg-white rounded-xl border border-slate-300 p-2.5 text-xs text-slate-900 focus:outline-none focus:border-[#0500A3]">
+        </div>
+
+        <button onclick="App.handleLoginSubmit()" class="w-full py-2.5 btn-primary text-xs font-semibold mt-1">
+          Sign In
+        </button>
+      </div>
+
+      <p class="text-center text-xs text-slate-500 mt-4">
+        New to MineVest? <a href="#" onclick="App.openModal('register'); return false;" class="text-[#0500A3] font-semibold hover:underline">Create an account</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Register Modal -->
+  <div id="registerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="card-clean w-full max-w-sm p-6 sm:p-8 relative shadow-2xl">
+      <button onclick="App.closeModal('registerModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+
+      <div class="text-center mb-4">
+        <h3 class="text-xl font-bold text-slate-900">Create Investor Account</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Start accumulating daily Bitcoin yields</p>
+      </div>
+
+      <!-- 1-Click Google Sign Up (Universal for any Gmail) -->
+      <button type="button" onclick="App.loginWithGoogle()" class="w-full py-2.5 px-4 rounded-xl border border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2.5 text-xs font-semibold text-slate-700 mb-3 shadow-sm">
+        <svg class="w-4 h-4" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        Sign Up with Google
+      </button>
+
+      <div class="relative flex py-1 items-center mb-3">
+        <div class="flex-grow border-t border-slate-200"></div>
+        <span class="flex-shrink mx-3 text-[10px] text-slate-400 uppercase font-semibold">Or with Email</span>
+        <div class="flex-grow border-t border-slate-200"></div>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Full Legal Name</label>
+          <input id="reg-name" type="text" placeholder="e.g. Satoshi Nakamoto" class="w-full bg-white rounded-xl border border-slate-300 p-2.5 text-xs text-slate-900 focus:outline-none focus:border-[#0500A3]">
+        </div>
+        <div>
+          <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Email Address</label>
+          <input id="reg-email" type="email" placeholder="name@domain.com" class="w-full bg-white rounded-xl border border-slate-300 p-2.5 text-xs text-slate-900 focus:outline-none focus:border-[#0500A3]">
+        </div>
+        <div>
+          <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Password</label>
+          <input id="reg-password" type="password" placeholder="••••••••" class="w-full bg-white rounded-xl border border-slate-300 p-2.5 text-xs text-slate-900 focus:outline-none focus:border-[#0500A3]">
+        </div>
+        <div>
+          <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Referral Code (Optional)</label>
+          <input id="reg-ref" type="text" placeholder="MV..." class="w-full bg-white rounded-xl border border-slate-300 p-2.5 text-xs text-slate-900 focus:outline-none font-mono">
+        </div>
+
+        <button id="btn-register-submit" onclick="App.handleRegisterSubmit()" class="w-full py-2.5 btn-primary text-xs font-semibold mt-2">
+          Create Account
+        </button>
+      </div>
+
+      <p class="text-center text-xs text-slate-500 mt-4">
+        Already registered? <a href="#" onclick="App.openModal('login'); return false;" class="text-[#0500A3] font-semibold hover:underline">Sign In</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Confirmation Link Sent Modal -->
+  <div id="linkSentModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="card-clean w-full max-w-sm p-6 sm:p-8 relative shadow-2xl text-center">
+      <button onclick="App.closeModal('linkSentModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+
+      <div class="w-16 h-16 rounded-2xl bg-[#EEF0FF] text-[#0500A3] flex items-center justify-center mx-auto mb-4 text-2xl shadow-sm">
+        <i class="fa-solid fa-envelope-open-text"></i>
+      </div>
+
+      <h3 class="text-xl font-bold text-slate-900">Check Your Inbox</h3>
+      <p class="text-xs text-slate-500 mt-1">We sent an account activation link to:</p>
+      
+      <div id="link-sent-email" class="font-bold text-slate-900 bg-slate-50 py-2.5 px-3 rounded-xl border border-slate-200 break-all text-xs my-3 font-mono"></div>
+
+      <p class="text-xs text-slate-600 leading-relaxed mb-4">
+        Click the link in the email to confirm your address and activate your client dashboard.
+      </p>
+
+      <!-- Direct Activation Link Option -->
+      <div id="link-sent-dev-box" class="hidden my-3 p-3 bg-blue-50 rounded-xl border border-blue-200 text-left">
+        <div class="flex items-center gap-1.5 text-[11px] font-bold text-blue-900 mb-1">
+          <i class="fa-solid fa-circle-check text-blue-600"></i> Instant Account Activation
+        </div>
+        <p class="text-[10px] text-blue-700 leading-snug mb-2">
+          Click below to immediately confirm your address and launch your dashboard:
+        </p>
+        <a id="link-sent-direct-btn" href="#" class="block text-center w-full py-2 px-3 bg-[#0500A3] text-white rounded-lg text-xs font-semibold hover:bg-opacity-90">
+          <i class="fa-solid fa-arrow-up-right-from-square text-[10px] mr-1"></i> Activate Account Now
+        </a>
+      </div>
+
+      <div class="text-xs text-slate-500 mb-4">
+        Didn't receive the email? 
+        <button id="btn-resend-link" onclick="App.handleResendLink()" class="text-[#0500A3] font-semibold hover:underline ml-1">
+          Resend Link
+        </button>
+      </div>
+
+      <button onclick="App.closeModal('linkSentModal')" class="w-full py-2.5 btn-primary text-xs font-semibold">
+        Got it, Back to Home
+      </button>
+    </div>
+  </div>
+
+  <!-- Plan Activation Modal (Invest Modal) -->
+  <div id="investModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="card-clean w-full max-w-sm p-6 sm:p-8 relative shadow-2xl">
+      <button onclick="Dashboard.closeInvestModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+
+      <input type="hidden" id="invest-modal-plan-id">
+
+      <div class="text-center mb-5">
+        <span class="text-xs font-bold text-[#0500A3] uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#EEF0FF] border border-[#0500A3]/20">
+          Subscribe To Yield Tier
+        </span>
+        <h3 id="invest-modal-plan-name" class="text-xl font-bold text-slate-900 mt-2">Plan Name</h3>
+        <p id="invest-modal-daily-roi" class="text-xs font-bold text-emerald-700 mt-0.5">+2.8% Daily ROI</p>
+      </div>
+
+      <div class="space-y-4">
+        <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs space-y-1">
+          <div class="flex justify-between text-slate-500"><span>Deposit Range:</span><strong id="invest-modal-range" class="text-slate-900">$2,500 - $10,000</strong></div>
+          <div class="flex justify-between text-slate-500"><span>Your Available Balance:</span><strong id="invest-modal-balance-hint" class="text-[#0500A3]">$14,850.00</strong></div>
+        </div>
+
+        <div>
+          <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Allocation Capital (USD)</label>
+          <div class="relative flex items-center bg-white rounded-xl border border-slate-300 p-2.5">
+            <span class="text-base font-bold text-slate-400 mr-2">$</span>
+            <input id="invest-modal-amount" type="number" class="w-full bg-transparent text-base font-bold text-slate-900 focus:outline-none font-mono">
+          </div>
+        </div>
+
+        <button onclick="Dashboard.submitInvestment()" class="w-full py-2.5 btn-primary text-xs font-semibold">
+          Confirm Capital Allocation
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Adjust Balance Modal -->
+  <div id="adminBalanceModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="card-clean w-full max-w-sm p-6 sm:p-8 relative shadow-2xl">
+      <button onclick="Admin.closeAdjustBalanceModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+
+      <input type="hidden" id="adm-adj-user-id">
+
+      <h3 class="text-lg font-bold text-slate-900 mb-0.5">Adjust Investor Balance</h3>
+      <p class="text-xs text-slate-500 mb-4">Target User: <strong id="adm-adj-user-name" class="text-[#0500A3]">User</strong></p>
+
+      <div class="space-y-3.5">
+        <div class="text-xs text-slate-600">
+          Current Balance: <strong id="adm-adj-current" class="text-slate-900">$0.00</strong>
+        </div>
+
+        <div>
+          <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Adjustment Action</label>
+          <select id="adm-adj-action" class="w-full bg-white rounded-xl border border-slate-300 p-2.5 text-xs text-slate-900">
+            <option value="add">Credit / Add to Balance</option>
+            <option value="set">Set Fixed Balance</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Amount (USD)</label>
+          <input id="adm-adj-amount" type="number" class="w-full bg-white rounded-xl border border-slate-300 p-2.5 text-xs text-slate-900 font-mono">
+        </div>
+
+        <button onclick="Admin.submitAdjustBalance()" class="w-full py-2.5 btn-primary text-xs font-semibold">
+          Apply Adjustment
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Minimalist Global Footer -->
+  <footer class="bg-white border-t border-slate-200 py-12 text-xs text-slate-500 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div>
+          <div class="font-bold text-sm text-slate-900 mb-2 flex items-center gap-2">
+            <div class="w-6 h-6 rounded-md bg-[#0500A3] text-white flex items-center justify-center text-xs">
+              <i class="fa-brands fa-bitcoin"></i>
+            </div>
+            MineVest Capital
+          </div>
+          <p class="text-slate-500 leading-relaxed text-[11px]">
+            Institutional Bitcoin asset management, dedicated green-energy mining infrastructure, and algorithmic OTC yield generation.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-semibold text-slate-900 text-xs uppercase tracking-wider mb-2.5">Yield Products</h4>
+          <ul class="space-y-1.5 text-[11px]">
+            <li><a href="#plans" class="hover:text-[#0500A3] transition-colors">Starter Mining Tier</a></li>
+            <li><a href="#plans" class="hover:text-[#0500A3] transition-colors">Mining Pro Compound</a></li>
+            <li><a href="#plans" class="hover:text-[#0500A3] transition-colors">Institutional Liquidity</a></li>
+            <li><a href="#plans" class="hover:text-[#0500A3] transition-colors">Whale Alpha Private Allocation</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-semibold text-slate-900 text-xs uppercase tracking-wider mb-2.5">Custody & Compliance</h4>
+          <ul class="space-y-1.5 text-[11px]">
+            <li><a href="#security" class="hover:text-[#0500A3] transition-colors">BitGo Cold Custody</a></li>
+            <li><a href="#security" class="hover:text-[#0500A3] transition-colors">Merkle Tree Proof of Reserves</a></li>
+            <li><a href="#security" class="hover:text-[#0500A3] transition-colors">$125M Contingency Insurance</a></li>
+            <li><a href="#security" class="hover:text-[#0500A3] transition-colors">ISO/IEC 27001 Certified Facilities</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-semibold text-slate-900 text-xs uppercase tracking-wider mb-2.5">Institutional Support</h4>
+          <ul class="space-y-1.5 text-[11px]">
+            <li><span class="text-slate-500">Inquiries:</span> <a href="mailto:support@minevest.capital" class="text-[#0500A3] hover:underline">support@minevest.capital</a></li>
+            <li><span class="text-slate-500">Security Desk:</span> Zurich &bull; Reykjavik</li>
+            <li><span class="text-slate-500">Coverage:</span> 24/7 Institutional SLA</li>
+            <li><span class="text-slate-500">Status:</span> <span class="text-emerald-700 font-medium">All Vaults Operational</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-slate-100 pt-6 text-[11px] text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p>&copy; 2026 MineVest Capital Inc. All rights reserved.</p>
+        <p class="max-w-xl text-center sm:text-right">
+          Cryptocurrency holdings are subject to market volatility. Digital assets are securely safeguarded in segregated multi-signature cold vaults.
+        </p>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Firebase App & Auth SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="/static/js/firebase-config.js?v=3.0.0"></script>
+
+  <!-- Scripts with cache-busting version -->
+  <script src="/static/js/api.js?v=3.7.0"></script>
+  <script src="/static/js/dashboard.js?v=3.7.0"></script>
+  <script src="/static/js/admin.js?v=3.7.0"></script>
+  <script src="/static/js/app.js?v=3.7.0"></script>
+
+</body>
+</html>
