@@ -1,11 +1,13 @@
 import os
 import secrets
+import urllib.parse
 from datetime import datetime, timedelta
 from typing import Optional, List
 from fastapi import FastAPI, Depends, HTTPException, Header, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.types import ASGIApp, Scope, Receive, Send
 from pydantic import BaseModel
 
 from backend.database import get_db, init_db, hash_password, verify_password, generate_referral_code
@@ -16,8 +18,58 @@ from backend.email_service import send_verification_email, generate_verification
 # Initialize database on startup
 init_db()
 
+class VercelPathRewriteMiddleware:
+    """
+    On Vercel, serverless function rewrites may deliver requests with scope['path'] set
+    to the function entrypoint ('/api/index.py', '/api/index', '/api') instead of the
+    originally requested API path. This middleware restores the true requested path from
+    the query parameter (__orig_path__) or Vercel proxy headers (x-matched-path, x-forwarded-uri).
+    """
+    def __init__(self, app: ASGIApp):
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send):
+        if scope["type"] == "http":
+            current_path = scope.get("path", "")
+            # Intervene if the path was rewritten to entrypoint or root
+            if current_path in ("/api/index.py", "/api/index", "/api", "/api/", "", "/"):
+                headers = dict(scope.get("headers", []))
+                orig_path = None
+
+                # Check 1: query string for __orig_path__
+                query_string = scope.get("query_string", b"").decode("latin-1")
+                if query_string and "__orig_path__=" in query_string:
+                    qs_params = urllib.parse.parse_qs(query_string)
+                    if "__orig_path__" in qs_params and qs_params["__orig_path__"]:
+                        orig_path = qs_params["__orig_path__"][0]
+                        clean_qs = "&".join(
+                            f"{k}={v[0]}" for k, v in qs_params.items() if k != "__orig_path__"
+                        )
+                        scope["query_string"] = clean_qs.encode("latin-1")
+
+                # Check 2: proxy headers injected by Vercel
+                if not orig_path:
+                    for hname in (b"x-matched-path", b"x-forwarded-uri", b"x-original-uri", b"x-invoke-path"):
+                        val = headers.get(hname)
+                        if val:
+                            decoded = val.decode("latin-1").split("?")[0].strip()
+                            if decoded and decoded not in ("/api/index.py", "/api/index", "/api", "/api/"):
+                                orig_path = decoded
+                                break
+
+                # Update scope if a genuine target path is found
+                if orig_path:
+                    clean_path = orig_path.split("?")[0]
+                    if not clean_path.startswith("/"):
+                        clean_path = "/" + clean_path
+                    scope["path"] = clean_path
+                    scope["raw_path"] = clean_path.encode("latin-1", "replace")
+
+        await self.app(scope, receive, send)
+
 app = FastAPI(title="MineVest Crypto Capital", version="2.0.0")
 
+app.add_middleware(VercelPathRewriteMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

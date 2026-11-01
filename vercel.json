@@ -1,9 +1,16 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
-      "destination": "/api/index.py"
+      "source": "/api/:match*",
+      "destination": "/api/index.py?__orig_path__=/api/:match*"
+    },
+    {
+      "source": "/api",
+      "destination": "/api/index.py?__orig_path__=/api"
+    },
+    {
+      "source": "/((?!api|static|favicon.ico).*)",
+      "destination": "/index.html"
     }
   ]
 }
-
