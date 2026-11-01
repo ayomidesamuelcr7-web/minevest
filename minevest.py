@@ -892,16 +892,30 @@ def process_withdrawal_action(tx_id: int, action: str, admin: dict = Depends(get
 
 # --- Serve Single Page App Front-end ---
 
-@app.get("/")
-def serve_index():
+def get_index_response():
     index_path = os.path.join(TEMPLATES_DIR, "index.html")
-    return FileResponse(index_path)
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    root_index = os.path.join(BASE_DIR, "templates", "index.html")
+    if os.path.exists(root_index):
+        return FileResponse(root_index)
+    raise HTTPException(status_code=404, detail="index.html not found")
+
+@app.get("/")
+@app.get("/api/index.py")
+@app.get("/api/index")
+@app.get("/api")
+def serve_index():
+    return get_index_response()
 
 @app.get("/{catchall:path}")
 def serve_spa(catchall: str):
-    # If route doesn't match API, serve SPA index
+    # Support Vercel serverless function entrypoint paths
+    if catchall in ["api/index.py", "api/index", "api", "index.html"]:
+        return get_index_response()
+    # If route doesn't match API endpoints and not static, serve SPA index for client-side routing
     if not catchall.startswith("api/") and not catchall.startswith("static/"):
-        return FileResponse(os.path.join(TEMPLATES_DIR, "index.html"))
+        return get_index_response()
     raise HTTPException(status_code=404, detail="Not found")
 
 if __name__ == "__main__":
